@@ -1,4 +1,4 @@
-package com.guilda.registro.audit.dto.response;
+package com.guilda.registro.audit.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,5 +12,5 @@ public class UsuarioComRolesResponse {
     private String email;
     private String status;
     private String organizacaoNome;
-    private Set<String> roles; // nomes das roles
+    private Set<String> roles;
 }

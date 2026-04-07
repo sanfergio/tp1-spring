@@ -37,7 +37,6 @@ public class MissaoService {
         missao.setNivelPerigo(NivelPerigoEnum.valueOf(request.getNivelPerigo()));
         missao.setDataInicio(request.getDataInicio());
         missao.setDataTermino(request.getDataTermino());
-        // status padrão já é PLANEJADA
 
         Missao saved = missaoRepository.save(missao);
         return toResponse(saved);
@@ -45,11 +44,9 @@ public class MissaoService {
 
     @Transactional
     public ParticipacaoResponse inscreverAventureiro(ParticipacaoRequest request) {
-        // 1. Verificar se a missão existe
         Missao missao = missaoRepository.findById(request.getMissaoId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Missão não encontrada"));
 
-        // 2. Verificar se o aventureiro existe e está ativo
         Aventureiro aventureiro = aventureiroRepository.findById(request.getAventureiroId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aventureiro não encontrado"));
 
@@ -57,22 +54,18 @@ public class MissaoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aventureiro inativo não pode participar de missões");
         }
 
-        // 3. Verificar se a missão está em estado compatível (apenas PLANEJADA ou EM_ANDAMENTO)
         if (missao.getStatus() != StatusMissaoEnum.PLANEJADA && missao.getStatus() != StatusMissaoEnum.EM_ANDAMENTO) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missão não aceita novos participantes (status: " + missao.getStatus() + ")");
         }
 
-        // 4. Verificar se o aventureiro já está inscrito na missão
         if (participacaoRepository.existsByMissaoIdAndAventureiroId(missao.getId(), aventureiro.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Aventureiro já está inscrito nesta missão");
         }
 
-        // 5. Verificar se a organização do aventureiro é a mesma da missão
         if (!aventureiro.getOrganizacao().getId().equals(missao.getOrganizacao().getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aventureiro pertence a outra organização");
         }
 
-        // 6. Criar participação
         ParticipacaoMissao participacao = new ParticipacaoMissao();
         participacao.setMissao(missao);
         participacao.setAventureiro(aventureiro);

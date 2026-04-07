@@ -11,5 +11,5 @@ public class RoleComPermissoesResponse {
     private String nome;
     private String descricao;
     private String organizacaoNome;
-    private Set<String> permissoes; // codes das permissions
+    private Set<String> permissoes; 
 }

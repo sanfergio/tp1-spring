@@ -24,5 +24,5 @@ public class NovoUsuarioRequest {
 
     private String status = "ATIVO";
 
-    private Set<Long> roleIds; // opcional: já atribuir roles
+    private Set<Long> roleIds; 
 }

@@ -38,10 +38,8 @@ public class AventureiroConsultaService {
         Aventureiro aventureiro = aventureiroRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aventureiro não encontrado"));
 
-        // Quantidade de participações
         int totalParticipacoes = aventureiro.getParticipacoes().size();
 
-        // Última missão (pela data de registro da participação)
         Optional<Missao> ultimaMissao = aventureiro.getParticipacoes().stream()
                 .map(ParticipacaoMissao::getMissao)
                 .max(Comparator.comparing(Missao::getCreatedAt));

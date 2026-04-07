@@ -98,7 +98,6 @@ public class AventureiroService {
     }
 
     public List<AventureiroResponse> listarPorOrganizacao(Long orgId) {
-        // Verificar se organização existe
         if (!organizacaoRepository.existsById(orgId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organização não encontrada");
         }

@@ -27,7 +27,6 @@ public class Role {
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
-    // Mapeamento N:N com Permission
     @ManyToMany
     @JoinTable(
             name = "role_permissions",

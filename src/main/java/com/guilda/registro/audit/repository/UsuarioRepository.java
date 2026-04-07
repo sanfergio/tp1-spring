@@ -12,7 +12,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     boolean existsByOrganizacaoIdAndEmail(Long organizacaoId, String email);
 
-    // Busca um usuário já carregando as roles e as permissões (evita LazyInitialization)
     @Query("SELECT u FROM Usuario u " +
             "LEFT JOIN FETCH u.roles r " +
             "LEFT JOIN FETCH r.permissions " +

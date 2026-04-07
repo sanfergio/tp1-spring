@@ -23,7 +23,6 @@ public class AventureiroRepositoryImpl implements AventureiroRepositoryCustom {
     public Page<Aventureiro> findWithFilters(Boolean ativo, ClasseEnum classe, Integer nivelMinimo, Pageable pageable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        // --- Consulta principal (listagem) ---
         CriteriaQuery<Aventureiro> cq = cb.createQuery(Aventureiro.class);
         Root<Aventureiro> root = cq.from(Aventureiro.class);
         List<Predicate> predicates = new ArrayList<>();
@@ -40,7 +39,6 @@ public class AventureiroRepositoryImpl implements AventureiroRepositoryCustom {
 
         cq.where(predicates.toArray(new Predicate[0]));
 
-        // Ordenação
         if (pageable.getSort().isSorted()) {
             List<Order> orders = new ArrayList<>();
             pageable.getSort().forEach(order -> {
@@ -61,7 +59,6 @@ public class AventureiroRepositoryImpl implements AventureiroRepositoryCustom {
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
-        // --- Consulta de contagem (separada, com seus próprios predicates) ---
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Aventureiro> countRoot = countQuery.from(Aventureiro.class);
         List<Predicate> countPredicates = new ArrayList<>();
@@ -88,7 +85,6 @@ public class AventureiroRepositoryImpl implements AventureiroRepositoryCustom {
     public Page<Aventureiro> searchByNome(String nome, Pageable pageable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        // Consulta principal
         CriteriaQuery<Aventureiro> cq = cb.createQuery(Aventureiro.class);
         Root<Aventureiro> root = cq.from(Aventureiro.class);
         Predicate nomePredicate = cb.like(cb.lower(root.get("nome")), "%" + nome.toLowerCase() + "%");
@@ -100,7 +96,6 @@ public class AventureiroRepositoryImpl implements AventureiroRepositoryCustom {
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
-        // Consulta de contagem
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Aventureiro> countRoot = countQuery.from(Aventureiro.class);
         countQuery.select(cb.count(countRoot));

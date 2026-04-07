@@ -2,7 +2,7 @@ package com.guilda.registro.audit.controller;
 
 import com.guilda.registro.audit.dto.NovoUsuarioRequest;
 import com.guilda.registro.audit.dto.RoleComPermissoesResponse;
-import com.guilda.registro.audit.dto.response.UsuarioComRolesResponse;
+import com.guilda.registro.audit.dto.UsuarioComRolesResponse;
 import com.guilda.registro.audit.model.Role;
 import com.guilda.registro.audit.model.Usuario;
 import com.guilda.registro.audit.repository.OrganizacaoRepository;
@@ -48,7 +48,6 @@ public class AuditController {
         var organizacao = organizacaoRepository.findById(request.getOrganizacaoId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Organização não encontrada"));
 
-        // verifica se email já existe na organização (unique constraint)
         if (usuarioRepository.existsByOrganizacaoIdAndEmail(request.getOrganizacaoId(), request.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já utilizado nesta organização");
         }
@@ -57,7 +56,7 @@ public class AuditController {
         usuario.setOrganizacao(organizacao);
         usuario.setNome(request.getNome());
         usuario.setEmail(request.getEmail());
-        usuario.setSenhaHash(request.getSenhaHash()); // idealmente, hash antes de salvar
+        usuario.setSenhaHash(request.getSenhaHash());
         usuario.setStatus(request.getStatus());
         usuario.setCreatedAt(OffsetDateTime.now());
         usuario.setUpdatedAt(OffsetDateTime.now());
