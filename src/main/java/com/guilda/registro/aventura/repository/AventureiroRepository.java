@@ -3,13 +3,15 @@ package com.guilda.registro.aventura.repository;
 import com.guilda.registro.aventura.model.Aventureiro;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import java.util.List;
+import org.springframework.data.repository.query.Param;
 
-public interface AventureiroRepository extends JpaRepository<Aventureiro, Long> {
-    List<Aventureiro> findByOrganizacaoIdAndAtivoTrue(Long orgId);
+import java.util.List;
+import java.util.Optional;
+
+public interface AventureiroRepository extends JpaRepository<Aventureiro, Long>, AventureiroRepositoryCustom {
+
+    List<Aventureiro> findByOrganizacaoId(Long organizacaoId);
 
     @Query("SELECT a FROM Aventureiro a LEFT JOIN FETCH a.companheiro WHERE a.id = :id")
-    java.util.Optional<Aventureiro> findByIdWithCompanheiro(Long id);
-
-    List<Aventureiro> findByOrganizacaoId(Long orgId);
+    Optional<Aventureiro> findByIdWithCompanheiro(@Param("id") Long id);
 }

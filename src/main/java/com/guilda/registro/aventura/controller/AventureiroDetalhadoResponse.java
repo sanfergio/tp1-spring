@@ -18,4 +18,6 @@ public class AventureiroDetalhadoResponse {
     private CompanheiroResponse companheiro;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
+    private Integer totalParticipacoes;
+    private MissaoResumoResponse ultimaMissao; // pode ser null
 }
