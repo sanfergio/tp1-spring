@@ -1,4 +1,4 @@
-package com.guilda;
+package com.guilda.registro;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
