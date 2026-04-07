@@ -1,0 +1,28 @@
+package com.guilda.registro.aventura.controller;
+
+import com.guilda.registro.aventura.model.ClasseEnum;
+import com.guilda.registro.aventura.controller.AventureiroController;
+import com.guilda.registro.aventura.controller.CompanheiroResponse;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import java.time.OffsetDateTime;
+
+import com.guilda.registro.aventura.model.ClasseEnum;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import java.time.OffsetDateTime;
+
+@Data
+@AllArgsConstructor
+public class AventureiroResponse {
+    private Long id;
+    private String nome;
+    private ClasseEnum classe;
+    private Integer nivel;
+    private Boolean ativo;
+    private Long organizacaoId;
+    private Long usuarioCadastroId;
+    private CompanheiroResponse companheiro;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
+}
