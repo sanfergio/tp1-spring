@@ -1,10 +1,8 @@
 package com.guilda.registro.aventura.controller;
 
-import com.guilda.registro.aventura.controller.MissaoMetricasResponse;
-import com.guilda.registro.aventura.controller.RankingResponse;
+
 import com.guilda.registro.aventura.model.StatusMissaoEnum;
 import com.guilda.registro.aventura.service.RelatorioService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/relatorios")
-@RequiredArgsConstructor
 public class RelatorioController {
 
     private final RelatorioService service;
+
+    public RelatorioController(RelatorioService service) {
+        this.service = service;
+    }
 
     @GetMapping("/ranking")
     public List<RankingResponse> rankingParticipacao(

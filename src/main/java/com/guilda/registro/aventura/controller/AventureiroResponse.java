@@ -1,12 +1,6 @@
 package com.guilda.registro.aventura.controller;
 
 import com.guilda.registro.aventura.model.ClasseEnum;
-import com.guilda.registro.aventura.controller.CompanheiroResponse;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import java.time.OffsetDateTime;
-
-import com.guilda.registro.aventura.model.ClasseEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.time.OffsetDateTime;

@@ -1,7 +1,5 @@
 package com.guilda.registro.aventura.controller;
 
-import com.guilda.registro.aventura.controller.AventureiroDetalhadoResponse;
-import com.guilda.registro.aventura.controller.AventureiroResumoResponse;
 import com.guilda.registro.aventura.model.ClasseEnum;
 import com.guilda.registro.aventura.service.AventureiroConsultaService;
 import lombok.RequiredArgsConstructor;

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +31,10 @@ public interface MissaoRepository extends JpaRepository<Missao, Long> {
                                  @Param("dataInicioInicio") LocalDate dataInicioInicio,
                                  @Param("dataInicioFim") LocalDate dataInicioFim,
                                  Pageable pageable);
+
+    @Query("SELECT m FROM Missao m LEFT JOIN m.participacoes p " +
+            "WHERE m.createdAt >= :dataInicio " +
+            "GROUP BY m.id " +
+            "ORDER BY COUNT(p) DESC, m.createdAt DESC")
+    List<Missao> findTop10Top15Dias(@Param("dataInicio") OffsetDateTime dataInicio);
 }
