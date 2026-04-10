@@ -83,14 +83,14 @@ src/main/java/com/guilda/registro/
 
 ## Configuração do Banco de Dados com Docker
 
-O projeto utiliza a imagem Docker customizada **`leogloriainfnet/postgres-tp2-spring:1.0`** que contém o PostgreSQL pré-configurado com os esquemas `audit` e `aventura`, além de dados de exemplo.
+O projeto utiliza a imagem Docker customizada **`leogloriainfnet/postgres-tp2-spring:2.0-win`** que contém o PostgreSQL pré-configurado com os esquemas `audit` e `aventura`, além de dados de exemplo.
 
 ### Arquivos de Configuração
 
 O arquivo `application.properties` contém as configurações de conexão:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/auditdb
+spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
 spring.datasource.username=postgres
 spring.datasource.password=root
 spring.datasource.driver-class-name=org.postgresql.Driver
@@ -113,23 +113,23 @@ spring.jpa.properties.hibernate.hbm2ddl.create_namespaces=true
 
 1. **Extrair a imagem Docker do PostgreSQL**:
    ```bash
-   docker pull leogloriainfnet/postgres-tp2-spring:1.0
+   docker pull leogloriainfnet/postgres-tp2-spring:2.0-win
    ```
 
 2. **Iniciar o container PostgreSQL**:
    ```bash
    docker run -d \
-     --name postgres-tp2 \
-     -e POSTGRES_DB=auditdb \
+     --name postgres-tp3 \
+     -e POSTGRES_DB=postgres \
      -e POSTGRES_USER=postgres \
      -e POSTGRES_PASSWORD=root \
      -p 5432:5432 \
-     leogloriainfnet/postgres-tp2-spring:1.0
+     leogloriainfnet/postgres-tp2-spring:2.0-win
    ```
 
 3. **Aguardar o banco ficar pronto** (geralmente 10-15 segundos):
    ```bash
-   docker logs postgres-tp2
+   docker logs postgres-tp3
    ```
 
 4. **Build do projeto**:
@@ -151,8 +151,8 @@ A API estará disponível em `http://localhost:8080`.
 
 ### Parar o container:
 ```bash
-docker stop postgres-tp2
-docker rm postgres-tp2
+docker stop postgres-tp3
+docker rm postgres-tp3
 ```
 
 ## Testes
