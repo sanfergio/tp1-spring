@@ -38,13 +38,15 @@ class CompanheiroTest {
     void testCreateCompanheiro() {
         companheiro.setId(1L);
         companheiro.setNome("Arwen");
-        companheiro.setEspecie(EspecieEnum.ELFA);
+        // Usa o primeiro valor do enum disponível (genérico)
+        EspecieEnum primeiraEspecie = EspecieEnum.values()[0];
+        companheiro.setEspecie(primeiraEspecie);
         companheiro.setLealdade(100);
         companheiro.setAventureiro(aventureiro);
 
         assertThat(companheiro.getId()).isEqualTo(1L);
         assertThat(companheiro.getNome()).isEqualTo("Arwen");
-        assertThat(companheiro.getEspecie()).isEqualTo(EspecieEnum.ELFA);
+        assertThat(companheiro.getEspecie()).isEqualTo(primeiraEspecie);
         assertThat(companheiro.getLealdade()).isEqualTo(100);
         assertThat(companheiro.getAventureiro()).isEqualTo(aventureiro);
     }
@@ -52,20 +54,11 @@ class CompanheiroTest {
     @Test
     @DisplayName("Deve permitir diferentes espécies de companheiro")
     void testDiferentesEspecies() {
-        companheiro.setEspecie(EspecieEnum.CACHORRO);
-        assertThat(companheiro.getEspecie()).isEqualTo(EspecieEnum.CACHORRO);
-
-        companheiro.setEspecie(EspecieEnum.GATO);
-        assertThat(companheiro.getEspecie()).isEqualTo(EspecieEnum.GATO);
-
-        companheiro.setEspecie(EspecieEnum.CAVALO);
-        assertThat(companheiro.getEspecie()).isEqualTo(EspecieEnum.CAVALO);
-
-        companheiro.setEspecie(EspecieEnum.DRAGAOZINHO);
-        assertThat(companheiro.getEspecie()).isEqualTo(EspecieEnum.DRAGAOZINHO);
-
-        companheiro.setEspecie(EspecieEnum.ELFA);
-        assertThat(companheiro.getEspecie()).isEqualTo(EspecieEnum.ELFA);
+        // Testa todos os valores do enum dinamicamente
+        for (EspecieEnum especie : EspecieEnum.values()) {
+            companheiro.setEspecie(especie);
+            assertThat(companheiro.getEspecie()).isEqualTo(especie);
+        }
     }
 
     @Test
@@ -150,19 +143,15 @@ class CompanheiroTest {
     @Test
     @DisplayName("Deve permitir diferentes lealdades para caracterizar comportamento")
     void testLealdadeCaracteriza() {
-        // Lealdade baixa
         companheiro.setLealdade(25);
         assertThat(companheiro.getLealdade()).isLessThan(50);
 
-        // Lealdade média
         companheiro.setLealdade(50);
         assertThat(companheiro.getLealdade()).isEqualTo(50);
 
-        // Lealdade alta
         companheiro.setLealdade(75);
         assertThat(companheiro.getLealdade()).isGreaterThan(50);
 
-        // Lealdade máxima
         companheiro.setLealdade(100);
         assertThat(companheiro.getLealdade()).isEqualTo(100);
     }

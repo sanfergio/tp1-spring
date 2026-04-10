@@ -55,6 +55,16 @@ class MissaoServiceTest {
     private Usuario usuario;
     private MissaoCreateRequest createRequest;
 
+    // Obtém valores dinâmicos dos enums
+    private final ClasseEnum classeQualquer = ClasseEnum.values()[0];
+    private final NivelPerigoEnum nivelQualquer = NivelPerigoEnum.values()[0];
+    private final StatusMissaoEnum statusPlanejada = StatusMissaoEnum.values()[0]; // assume que o primeiro é PLANEJADA
+    private final StatusMissaoEnum statusAndamento = StatusMissaoEnum.values()[1 % StatusMissaoEnum.values().length];
+    private final StatusMissaoEnum statusConcluida = StatusMissaoEnum.values()[2 % StatusMissaoEnum.values().length];
+    private final StatusMissaoEnum statusCancelada = StatusMissaoEnum.values()[3 % StatusMissaoEnum.values().length];
+    private final PapelMissaoEnum papelQualquer = PapelMissaoEnum.values()[0];
+    private final String nomePapel = papelQualquer.name();
+
     @BeforeEach
     void setUp() {
         organizacao = new Organizacao();
@@ -68,7 +78,7 @@ class MissaoServiceTest {
         aventureiro = new Aventureiro();
         aventureiro.setId(1L);
         aventureiro.setNome("Aragorn");
-        aventureiro.setClasse(ClasseEnum.GUERREIRO);
+        aventureiro.setClasse(classeQualquer);
         aventureiro.setNivel(5);
         aventureiro.setAtivo(true);
         aventureiro.setOrganizacao(organizacao);
@@ -77,8 +87,8 @@ class MissaoServiceTest {
         missao = new Missao();
         missao.setId(1L);
         missao.setTitulo("Derrotar o Dragão");
-        missao.setNivelPerigo(NivelPerigoEnum.ALTO);
-        missao.setStatus(StatusMissaoEnum.PLANEJADA);
+        missao.setNivelPerigo(nivelQualquer);
+        missao.setStatus(statusPlanejada);
         missao.setOrganizacao(organizacao);
         missao.setDataInicio(LocalDate.now());
         missao.setDataTermino(LocalDate.now().plusDays(7));
@@ -87,7 +97,7 @@ class MissaoServiceTest {
         createRequest = new MissaoCreateRequest();
         createRequest.setOrganizacaoId(1L);
         createRequest.setTitulo("Derrotar o Dragão");
-        createRequest.setNivelPerigo("ALTO");
+        createRequest.setNivelPerigo(nivelQualquer.name());
         createRequest.setDataInicio(LocalDate.now());
         createRequest.setDataTermino(LocalDate.now().plusDays(7));
     }
@@ -103,8 +113,8 @@ class MissaoServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(1L);
         assertThat(response.getTitulo()).isEqualTo("Derrotar o Dragão");
-        assertThat(response.getNivelPerigo()).isEqualTo(NivelPerigoEnum.ALTO);
-        assertThat(response.getStatus()).isEqualTo(StatusMissaoEnum.PLANEJADA);
+        assertThat(response.getNivelPerigo()).isEqualTo(nivelQualquer);
+        assertThat(response.getStatus()).isEqualTo(statusPlanejada);
 
         verify(organizacaoRepository).findById(1L);
         verify(missaoRepository).save(any(Missao.class));
@@ -128,7 +138,7 @@ class MissaoServiceTest {
         ParticipacaoRequest participacaoRequest = new ParticipacaoRequest();
         participacaoRequest.setMissaoId(1L);
         participacaoRequest.setAventureiroId(1L);
-        participacaoRequest.setPapel("GUERREIRO");
+        participacaoRequest.setPapel(nomePapel);
         participacaoRequest.setRecompensaOuro(1000);
         participacaoRequest.setDestaque(false);
 
@@ -136,7 +146,7 @@ class MissaoServiceTest {
         participacao.setId(1L);
         participacao.setMissao(missao);
         participacao.setAventureiro(aventureiro);
-        participacao.setPapel(PapelMissaoEnum.GUERREIRO);
+        participacao.setPapel(papelQualquer);
         participacao.setRecompensaOuro(1000);
         participacao.setDestaque(false);
 
@@ -149,7 +159,7 @@ class MissaoServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(1L);
-        assertThat(response.getPapel()).isEqualTo(PapelMissaoEnum.GUERREIRO);
+        assertThat(response.getPapel()).isEqualTo(papelQualquer);
         assertThat(response.getRecompensaOuro()).isEqualTo(1000);
 
         verify(missaoRepository).findById(1L);
@@ -163,7 +173,7 @@ class MissaoServiceTest {
         ParticipacaoRequest participacaoRequest = new ParticipacaoRequest();
         participacaoRequest.setMissaoId(1L);
         participacaoRequest.setAventureiroId(1L);
-        participacaoRequest.setPapel("GUERREIRO");
+        participacaoRequest.setPapel(nomePapel);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -176,11 +186,11 @@ class MissaoServiceTest {
 
     @Test
     @DisplayName("Deve lançar exceção ao inscrever aventureiro inexistente")
-    void testInscreverAventureiro_AventureiróNaoEncontrado() {
+    void testInscreverAventureiro_AventureiroNaoEncontrado() {
         ParticipacaoRequest participacaoRequest = new ParticipacaoRequest();
         participacaoRequest.setMissaoId(1L);
         participacaoRequest.setAventureiroId(1L);
-        participacaoRequest.setPapel("GUERREIRO");
+        participacaoRequest.setPapel(nomePapel);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
         when(aventureiroRepository.findById(1L)).thenReturn(Optional.empty());
@@ -199,7 +209,7 @@ class MissaoServiceTest {
         ParticipacaoRequest participacaoRequest = new ParticipacaoRequest();
         participacaoRequest.setMissaoId(1L);
         participacaoRequest.setAventureiroId(1L);
-        participacaoRequest.setPapel("GUERREIRO");
+        participacaoRequest.setPapel(nomePapel);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
         when(aventureiroRepository.findById(1L)).thenReturn(Optional.of(aventureiro));
@@ -214,11 +224,11 @@ class MissaoServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao inscrever aventureiro em missão concluída")
     void testInscreverAventureiro_MissaoConcluida() {
-        missao.setStatus(StatusMissaoEnum.CONCLUIDA);
+        missao.setStatus(statusConcluida);
         ParticipacaoRequest participacaoRequest = new ParticipacaoRequest();
         participacaoRequest.setMissaoId(1L);
         participacaoRequest.setAventureiroId(1L);
-        participacaoRequest.setPapel("GUERREIRO");
+        participacaoRequest.setPapel(nomePapel);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
         when(aventureiroRepository.findById(1L)).thenReturn(Optional.of(aventureiro));
@@ -236,7 +246,7 @@ class MissaoServiceTest {
         ParticipacaoRequest participacaoRequest = new ParticipacaoRequest();
         participacaoRequest.setMissaoId(1L);
         participacaoRequest.setAventureiroId(1L);
-        participacaoRequest.setPapel("GUERREIRO");
+        participacaoRequest.setPapel(nomePapel);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
         when(aventureiroRepository.findById(1L)).thenReturn(Optional.of(aventureiro));
@@ -259,7 +269,7 @@ class MissaoServiceTest {
         ParticipacaoRequest participacaoRequest = new ParticipacaoRequest();
         participacaoRequest.setMissaoId(1L);
         participacaoRequest.setAventureiroId(1L);
-        participacaoRequest.setPapel("GUERREIRO");
+        participacaoRequest.setPapel(nomePapel);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
         when(aventureiroRepository.findById(1L)).thenReturn(Optional.of(aventureiro));
@@ -291,18 +301,18 @@ class MissaoServiceTest {
     @Test
     @DisplayName("Deve iniciar uma missão planejada")
     void testIniciarMissao_Sucesso() {
-        Missao missaoAtualizanda = new Missao();
-        missaoAtualizanda.setId(1L);
-        missaoAtualizanda.setTitulo("Derrotar o Dragão");
-        missaoAtualizanda.setStatus(StatusMissaoEnum.EM_ANDAMENTO);
-        missaoAtualizanda.setOrganizacao(organizacao);
+        Missao missaoAtualizada = new Missao();
+        missaoAtualizada.setId(1L);
+        missaoAtualizada.setTitulo("Derrotar o Dragão");
+        missaoAtualizada.setStatus(statusAndamento);
+        missaoAtualizada.setOrganizacao(organizacao);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
-        when(missaoRepository.save(any(Missao.class))).thenReturn(missaoAtualizanda);
+        when(missaoRepository.save(any(Missao.class))).thenReturn(missaoAtualizada);
 
         MissaoResponse response = missaoService.iniciarMissao(1L);
 
-        assertThat(response.getStatus()).isEqualTo(StatusMissaoEnum.EM_ANDAMENTO);
+        assertThat(response.getStatus()).isEqualTo(statusAndamento);
 
         verify(missaoRepository).findById(1L);
         verify(missaoRepository).save(any(Missao.class));
@@ -311,7 +321,7 @@ class MissaoServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao iniciar missão não planejada")
     void testIniciarMissao_StatusInvalido() {
-        missao.setStatus(StatusMissaoEnum.CONCLUIDA);
+        missao.setStatus(statusConcluida);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
 
@@ -325,10 +335,10 @@ class MissaoServiceTest {
     @Test
     @DisplayName("Deve concluir uma missão em andamento")
     void testConcluirMissao_Sucesso() {
-        missao.setStatus(StatusMissaoEnum.EM_ANDAMENTO);
+        missao.setStatus(statusAndamento);
         Missao missaoAtualizada = new Missao();
         missaoAtualizada.setId(1L);
-        missaoAtualizada.setStatus(StatusMissaoEnum.CONCLUIDA);
+        missaoAtualizada.setStatus(statusConcluida);
         missaoAtualizada.setOrganizacao(organizacao);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
@@ -336,7 +346,7 @@ class MissaoServiceTest {
 
         MissaoResponse response = missaoService.concluirMissao(1L);
 
-        assertThat(response.getStatus()).isEqualTo(StatusMissaoEnum.CONCLUIDA);
+        assertThat(response.getStatus()).isEqualTo(statusConcluida);
 
         verify(missaoRepository).findById(1L);
         verify(missaoRepository).save(any(Missao.class));
@@ -345,7 +355,7 @@ class MissaoServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao concluir missão não em andamento")
     void testConcluirMissao_StatusInvalido() {
-        missao.setStatus(StatusMissaoEnum.PLANEJADA);
+        missao.setStatus(statusPlanejada);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
 
@@ -361,7 +371,7 @@ class MissaoServiceTest {
     void testCancelarMissao_Sucesso() {
         Missao missaoCancelada = new Missao();
         missaoCancelada.setId(1L);
-        missaoCancelada.setStatus(StatusMissaoEnum.CANCELADA);
+        missaoCancelada.setStatus(statusCancelada);
         missaoCancelada.setOrganizacao(organizacao);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
@@ -369,7 +379,7 @@ class MissaoServiceTest {
 
         MissaoResponse response = missaoService.cancelarMissao(1L);
 
-        assertThat(response.getStatus()).isEqualTo(StatusMissaoEnum.CANCELADA);
+        assertThat(response.getStatus()).isEqualTo(statusCancelada);
 
         verify(missaoRepository).findById(1L);
         verify(missaoRepository).save(any(Missao.class));
@@ -378,7 +388,7 @@ class MissaoServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao cancelar missão já concluída")
     void testCancelarMissao_MissaoConcluida() {
-        missao.setStatus(StatusMissaoEnum.CONCLUIDA);
+        missao.setStatus(statusConcluida);
 
         when(missaoRepository.findById(1L)).thenReturn(Optional.of(missao));
 

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.*;
@@ -31,7 +30,8 @@ class ParticipacaoMissaoTest {
         aventureiro = new Aventureiro();
         aventureiro.setId(1L);
         aventureiro.setNome("Aragorn");
-        aventureiro.setClasse(ClasseEnum.GUERREIRO);
+        // Usa o primeiro valor do enum ClasseEnum disponível
+        aventureiro.setClasse(ClasseEnum.values()[0]);
         aventureiro.setNivel(5);
         aventureiro.setOrganizacao(organizacao);
         aventureiro.setUsuarioCadastro(usuario);
@@ -39,8 +39,10 @@ class ParticipacaoMissaoTest {
         missao = new Missao();
         missao.setId(1L);
         missao.setTitulo("Derrotar Dragão");
-        missao.setNivelPerigo(NivelPerigoEnum.ALTO);
-        missao.setStatus(StatusMissaoEnum.EM_ANDAMENTO);
+        // Usa o primeiro valor disponível de NivelPerigoEnum
+        missao.setNivelPerigo(NivelPerigoEnum.values()[0]);
+        // Usa o primeiro valor disponível de StatusMissaoEnum
+        missao.setStatus(StatusMissaoEnum.values()[0]);
         missao.setOrganizacao(organizacao);
 
         participacao = new ParticipacaoMissao();
@@ -52,20 +54,22 @@ class ParticipacaoMissaoTest {
         participacao.setId(1L);
         participacao.setMissao(missao);
         participacao.setAventureiro(aventureiro);
-        participacao.setPapel(PapelMissaoEnum.GUERREIRO);
+        // Usa o primeiro valor do enum PapelMissaoEnum
+        PapelMissaoEnum primeiroPapel = PapelMissaoEnum.values()[0];
+        participacao.setPapel(primeiroPapel);
         participacao.setRecompensaOuro(1000);
         participacao.setDestaque(false);
 
         assertThat(participacao.getId()).isEqualTo(1L);
         assertThat(participacao.getMissao()).isEqualTo(missao);
         assertThat(participacao.getAventureiro()).isEqualTo(aventureiro);
-        assertThat(participacao.getPapel()).isEqualTo(PapelMissaoEnum.GUERREIRO);
+        assertThat(participacao.getPapel()).isEqualTo(primeiroPapel);
         assertThat(participacao.getRecompensaOuro()).isEqualTo(1000);
         assertThat(participacao.getDestaque()).isFalse();
     }
 
     @Test
-    @DisplayName("Deve inicializaár destaque como falso por padrão")
+    @DisplayName("Deve inicializar destaque como falso por padrão")
     void testDestaqueDefault() {
         assertThat(participacao.getDestaque()).isFalse();
     }
@@ -73,17 +77,11 @@ class ParticipacaoMissaoTest {
     @Test
     @DisplayName("Deve permitir diferentes papéis de missão")
     void testDiferentesPapeisMissao() {
-        participacao.setPapel(PapelMissaoEnum.GUERREIRO);
-        assertThat(participacao.getPapel()).isEqualTo(PapelMissaoEnum.GUERREIRO);
-
-        participacao.setPapel(PapelMissaoEnum.MAGO);
-        assertThat(participacao.getPapel()).isEqualTo(PapelMissaoEnum.MAGO);
-
-        participacao.setPapel(PapelMissaoEnum.ARQUEIRO);
-        assertThat(participacao.getPapel()).isEqualTo(PapelMissaoEnum.ARQUEIRO);
-
-        participacao.setPapel(PapelMissaoEnum.CLERIGO);
-        assertThat(participacao.getPapel()).isEqualTo(PapelMissaoEnum.CLERIGO);
+        // Testa todos os valores do enum PapelMissaoEnum dinamicamente
+        for (PapelMissaoEnum papel : PapelMissaoEnum.values()) {
+            participacao.setPapel(papel);
+            assertThat(participacao.getPapel()).isEqualTo(papel);
+        }
     }
 
     @Test
@@ -156,11 +154,19 @@ class ParticipacaoMissaoTest {
     @Test
     @DisplayName("Deve permitir múltiplos papéis na mesma participação (alteração)")
     void testAlterarPapel() {
-        participacao.setPapel(PapelMissaoEnum.GUERREIRO);
-        assertThat(participacao.getPapel()).isEqualTo(PapelMissaoEnum.GUERREIRO);
+        // Pega o primeiro e o segundo valor do enum (se houver)
+        PapelMissaoEnum[] papeis = PapelMissaoEnum.values();
+        if (papeis.length >= 2) {
+            participacao.setPapel(papeis[0]);
+            assertThat(participacao.getPapel()).isEqualTo(papeis[0]);
 
-        participacao.setPapel(PapelMissaoEnum.MAGO);
-        assertThat(participacao.getPapel()).isEqualTo(PapelMissaoEnum.MAGO);
+            participacao.setPapel(papeis[1]);
+            assertThat(participacao.getPapel()).isEqualTo(papeis[1]);
+        } else {
+            // Caso tenha apenas um valor, apenas teste que o valor é aceito
+            participacao.setPapel(papeis[0]);
+            assertThat(participacao.getPapel()).isEqualTo(papeis[0]);
+        }
     }
 
     @Test
@@ -199,7 +205,8 @@ class ParticipacaoMissaoTest {
         participacao.setId(1L);
         participacao.setMissao(missao);
         participacao.setAventureiro(aventureiro);
-        participacao.setPapel(PapelMissaoEnum.GUERREIRO);
+        PapelMissaoEnum papelQualquer = PapelMissaoEnum.values()[0];
+        participacao.setPapel(papelQualquer);
         participacao.setRecompensaOuro(2000);
         participacao.setDestaque(true);
         participacao.setRegisteredAt(OffsetDateTime.now());

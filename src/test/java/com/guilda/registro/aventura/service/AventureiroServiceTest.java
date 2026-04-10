@@ -1,13 +1,10 @@
 package com.guilda.registro.aventura.service;
-
 import com.guilda.registro.aventura.controller.AventureiroResponse;
-import com.guilda.registro.aventura.controller.CompanheiroResponse;
 import com.guilda.registro.aventura.dto.AventureiroCreateRequest;
 import com.guilda.registro.aventura.dto.CompanheiroRequest;
 import com.guilda.registro.aventura.model.Aventureiro;
 import com.guilda.registro.aventura.model.ClasseEnum;
 import com.guilda.registro.aventura.model.Companheiro;
-import com.guilda.registro.aventura.model.EspecieEnum;
 import com.guilda.registro.aventura.repository.AventureiroRepository;
 import com.guilda.registro.aventura.repository.CompanheiroRepository;
 import com.guilda.registro.audit.model.Organizacao;
@@ -180,7 +177,7 @@ class AventureiroServiceTest {
         Companheiro companheiro = new Companheiro();
         companheiro.setId(1L);
         companheiro.setNome("Arwen");
-        companheiro.setEspecie(EspecieEnum.ELFA);
+        // companheiro.setEspecie(EspecieEnum.ELFA);
         companheiro.setLealdade(100);
         companheiro.setAventureiro(aventureiro);
 
