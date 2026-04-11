@@ -1,5 +1,5 @@
 
-# TP2 Spring - Sistema de Registro de Aventureiros
+# AT Spring - Sistema de Registro de Aventureiros
 
 API RESTful desenvolvida em Java com Spring Boot para gerenciar um sistema completo de registro de aventureiros, incluindo auditoria de usuários, gerenciamento de roles/permissions e operações com missões e aventureiros.
 
