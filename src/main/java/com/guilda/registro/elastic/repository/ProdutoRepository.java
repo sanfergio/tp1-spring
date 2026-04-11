@@ -4,5 +4,5 @@ import com.guilda.registro.elastic.model.Produto;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public interface ProdutoRepository extends ElasticsearchRepository<Produto, String> {
-    // vazio, apenas para injeção se necessário
+
 }
