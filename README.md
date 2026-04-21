@@ -1,7 +1,7 @@
 
 # AT Spring - Sistema de Registro de Aventureiros
 
-API RESTful desenvolvida em Java com Spring Boot para gerenciar um sistema completo de registro de aventureiros, incluindo auditoria de usuários, gerenciamento de roles/permissions e operações com missões e aventureiros.
+API RESTful desenvolvida em Java com Spring Boot para gerenciar um sistema completo de registro de aventureiros, incluindo auditoria de usuários, gerenciamento de roles/permissions, operações com missões e aventureiros e consultas no Elasticsearch.
 
 ## Visão Geral
 
@@ -10,14 +10,20 @@ Este projeto integra dois esquemas principais no PostgreSQL:
 - **`audit`**: Gerenciamento de usuários, organizações, roles e permissions
 - **`aventura`**: Domínio operacional com aventureiros, missões, participações e companheiros
 
+E um módulo adicional:
+
+- **`elastic`**: Consultas e agregações de produtos no Elasticsearch (índice `guilda_loja`)
+
 ## Tecnologias Utilizadas
 
 - **Java 17**: Versão da linguagem de programação
 - **Spring Boot 3.1.0**: Framework principal
 - **PostgreSQL 15+**: Banco de dados relacional (via Docker)
+- **Elasticsearch 8+**: Busca textual e agregações (via Docker)
 - **Docker**: Containerização da aplicação e banco de dados
 - **Spring Data JPA**: ORM e acesso a dados
 - **Hibernate 6.2.2**: Mapeamento objeto-relacional
+- **Spring Data Elasticsearch / Elasticsearch Java Client**: Integração com Elasticsearch
 - **Maven**: Gerenciamento de dependências e build
 - **Lombok**: Redução de código boilerplate
 - **JUnit 5 / Testcontainers**: Testes com PostgreSQL real
@@ -79,11 +85,30 @@ src/main/java/com/guilda/registro/
         ├── MissaoConsultaService.java
         ├── MissaoService.java
         └── RelatorioService.java
+
+  src/main/java/com/guilda/registro/elastic/
+  ├── config/
+  │   └── ElasticsearchConfig.java
+  ├── controller/
+  │   └── ProdutoController.java (buscas e agregações)
+  ├── dto/
+  │   └── [DTOs de agregação e resposta]
+  ├── model/
+  │   └── Produto.java (@Document indexName = "guilda_loja")
+  ├── repository/
+  │   └── ProdutoRepository.java
+  └── service/
+    └── ProdutoService.java (queries e agregações via `ElasticsearchClient`)
 ```
 
-## Configuração do Banco de Dados com Docker
+## Configuração de Infra (PostgreSQL + Elasticsearch) com Docker
 
-O projeto utiliza a imagem Docker customizada **`leogloriainfnet/postgres-tp2-spring:2.0-win`** que contém o PostgreSQL pré-configurado com os esquemas `audit` e `aventura`, além de dados de exemplo.
+O repositório utiliza **duas imagens Docker**, separadas por domínio:
+
+- **PostgreSQL (schemas `audit` e `aventura`)**: `leogloriainfnet/postgres-tp2-spring:2.0-win`
+- **Elasticsearch (módulo `elastic`)**: `leogloriainfnet/elastic-tp2-spring:1.0-windows`
+
+> A aplicação espera PostgreSQL em `localhost:5432` e Elasticsearch em `localhost:9200`.
 
 ### Arquivos de Configuração
 
@@ -100,6 +125,11 @@ spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.default_schema=audit
 spring.jpa.properties.hibernate.hbm2ddl.create_namespaces=true
+
+# Elasticsearch
+spring.elasticsearch.uris=http://localhost:9200
+spring.elasticsearch.connection-timeout=5s
+spring.elasticsearch.socket-timeout=5s
 ```
 
 ## Como Executar
@@ -111,15 +141,16 @@ spring.jpa.properties.hibernate.hbm2ddl.create_namespaces=true
 
 ### Passos:
 
-1. **Extrair a imagem Docker do PostgreSQL**:
+1. **Extrair as imagens Docker**:
    ```bash
-   docker pull leogloriainfnet/postgres-tp2-spring:2.0-win
+docker pull leogloriainfnet/postgres-tp2-spring:2.0-win
+docker pull leogloriainfnet/elastic-tp2-spring:1.0-windows
    ```
 
-2. **Iniciar o container PostgreSQL**:
+2. **Iniciar o container PostgreSQL (audit + aventura)**:
    ```bash
    docker run -d \
-     --name postgres-tp3 \
+     --name postgres-tp2-spring \
      -e POSTGRES_DB=postgres \
      -e POSTGRES_USER=postgres \
      -e POSTGRES_PASSWORD=root \
@@ -127,32 +158,72 @@ spring.jpa.properties.hibernate.hbm2ddl.create_namespaces=true
      leogloriainfnet/postgres-tp2-spring:2.0-win
    ```
 
-3. **Aguardar o banco ficar pronto** (geralmente 10-15 segundos):
+3. **(Se necessário) Resetar a senha do usuário `postgres` para `root` dentro do container**
+
+Algumas máquinas/execuções podem subir o container com senha diferente da esperada pelo projeto. Se ao iniciar a aplicação você receber erro de autenticação, faça o reset pelo terminal do container:
+
+```bash
+docker exec -it postgres-tp2-spring psql -U postgres -d postgres
+```
+
+Dentro do `psql`, execute:
+
+```sql
+ALTER USER postgres WITH PASSWORD 'root';
+```
+
+E finalize com:
+
+```sql
+\q
+```
+
+> Dica: se você estiver reutilizando volumes antigos, trocar `POSTGRES_PASSWORD` no `docker run` não altera a senha já persistida. Nesse caso, apague o container/volume e recrie, ou use o `ALTER USER` acima.
+
+4. **Iniciar o container Elasticsearch (módulo elastic)**:
+
+```bash
+docker run -d \
+  --name elastic-tp2-spring \
+  -p 9200:9200 \
+  -p 9300:9300 \
+  leogloriainfnet/elastic-tp2-spring:1.0-windows
+```
+
+5. **Aguardar os serviços ficarem prontos**:
+
+PostgreSQL:
    ```bash
-   docker logs postgres-tp3
+docker logs postgres-tp2-spring
    ```
 
-4. **Build do projeto**:
+Elasticsearch:
+
+```bash
+docker logs elastic-tp2-spring
+```
+
+6. **Build do projeto**:
    ```bash
    mvn clean install
    ```
 
-5. **Executar a aplicação**:
+7. **Executar a aplicação**:
    ```bash
    mvn spring-boot:run
    ```
    
    Ou via Java diretamente:
    ```bash
-   java -jar target/tp2-spring-1.0-SNAPSHOT.jar
+java -jar target/tp1-spring-1.0-SNAPSHOT.jar
    ```
 
 A API estará disponível em `http://localhost:8080`.
 
 ### Parar o container:
 ```bash
-docker stop postgres-tp3
-docker rm postgres-tp3
+docker stop postgres-tp2-spring elastic-tp2-spring
+docker rm postgres-tp2-spring elastic-tp2-spring
 ```
 
 ## Testes
@@ -284,10 +355,12 @@ curl -X POST "http://localhost:8080/aventura/missoes/participacoes" \
   }'
 ```
 
-### 2.5 Listar aventureiros de uma organização
+### 2.5 Listar aventureiros (paginação básica)
 ```bash
 curl -X GET "http://localhost:8080/aventureiros-consulta?page=0&size=10"
 ```
+
+### 2.6 Testar inscrição duplicada na mesma missão
 ```bash
 curl -X POST "http://localhost:8080/aventura/missoes/participacoes" \
   -H "Content-Type: application/json" \
@@ -312,6 +385,24 @@ curl -X POST "http://localhost:8080/aventura/missoes/participacoes" \
 ```
 
 > **Esperado:** `400 Bad Request` informando que aventureiro inativo não pode participar.
+
+### 2.8 Iniciar uma missão (id=1)
+```bash
+curl -X PATCH "http://localhost:8080/aventura/missoes/1/iniciar" \
+  -H "Content-Type: application/json"
+```
+
+### 2.9 Concluir uma missão (id=1)
+```bash
+curl -X PATCH "http://localhost:8080/aventura/missoes/1/concluir" \
+  -H "Content-Type: application/json"
+```
+
+### 2.10 Cancelar uma missão (id=1)
+```bash
+curl -X PATCH "http://localhost:8080/aventura/missoes/1/cancelar" \
+  -H "Content-Type: application/json"
+```
 
 ---
 
@@ -341,6 +432,11 @@ curl -X GET "http://localhost:8080/aventureiros-consulta/1/perfil"
 curl -X GET "http://localhost:8080/aventura/missoes?orgId=1"
 ```
 
+### 3.5 Top 10 missões dos últimos 15 dias
+```bash
+curl -X GET "http://localhost:8080/aventura/missoes/top15dias"
+```
+
 ### 3.6 Ranking de participação (com filtros opcionais)
 ```bash
 curl -X GET "http://localhost:8080/relatorios/ranking"
@@ -357,6 +453,84 @@ curl -X GET "http://localhost:8080/relatorios/missoes-metricas?dataInicio=2026-0
 
 ---
 
+## 4. Endpoints do Elasticsearch (módulo `elastic`)
+
+> Requer o Elasticsearch rodando em `http://localhost:9200` e o índice `guilda_loja` disponível.
+
+### 4.1 Buscar produtos por nome (match)
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/nome?termo=espada" \
+  -H "Content-Type: application/json"
+```
+
+### 4.2 Buscar produtos por descrição (match)
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/descricao?termo=encantada" \
+  -H "Content-Type: application/json"
+```
+
+### 4.3 Buscar frase exata na descrição (match_phrase)
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/frase?termo=forjada%20em%20mithril" \
+  -H "Content-Type: application/json"
+```
+
+### 4.4 Buscar por nome com fuzzy
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/fuzzy?termo=esapda" \
+  -H "Content-Type: application/json"
+```
+
+### 4.5 Buscar em múltiplos campos (nome + descrição)
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/multicampos?termo=an%C3%A9is" \
+  -H "Content-Type: application/json"
+```
+
+### 4.6 Buscar por descrição e filtrar por categoria
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/com-filtro?termo=po%C3%A7%C3%A3o&categoria=consumiveis" \
+  -H "Content-Type: application/json"
+```
+
+### 4.7 Buscar por faixa de preço
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/faixa-preco?min=100&max=300" \
+  -H "Content-Type: application/json"
+```
+
+### 4.8 Busca avançada (parâmetros opcionais)
+```bash
+curl -X GET "http://localhost:8080/produtos/busca/avancada?categoria=armas&raridade=RARO&min=200&max=900" \
+  -H "Content-Type: application/json"
+```
+
+### 4.9 Agregação: contagem por categoria
+```bash
+curl -X GET "http://localhost:8080/produtos/agregacoes/por-categoria" \
+  -H "Content-Type: application/json"
+```
+
+### 4.10 Agregação: contagem por raridade
+```bash
+curl -X GET "http://localhost:8080/produtos/agregacoes/por-raridade" \
+  -H "Content-Type: application/json"
+```
+
+### 4.11 Agregação: preço médio
+```bash
+curl -X GET "http://localhost:8080/produtos/agregacoes/preco-medio" \
+  -H "Content-Type: application/json"
+```
+
+### 4.12 Agregação: faixas de preço
+```bash
+curl -X GET "http://localhost:8080/produtos/agregacoes/faixas-preco" \
+  -H "Content-Type: application/json"
+```
+
+---
+
 ## Observações Importantes
 
 - **Base URL:** `http://localhost:8080`
@@ -364,4 +538,5 @@ curl -X GET "http://localhost:8080/relatorios/missoes-metricas?dataInicio=2026-0
 - **Headers:** `Content-Type: application/json` para requisições com corpo
 - Para executar os comandos, utilize **Git Bash**, **WSL**, **PowerShell** (com `curl` instalado) ou ferramentas como **Postman/Insomnia**
 - Os valores de exemplo (`organizacaoId=1`, `usuarioCadastroId=1`, `missaoId=1`, `aventureiroId=1`) devem ser substituídos pelos IDs reais existentes no seu banco de dados
-- A aplicação requer um banco PostgreSQL rodando localmente em `localhost:5432` com credenciais padrão (`postgres`/`root`)
+- A aplicação requer PostgreSQL rodando em `localhost:5432` com credenciais padrão (`postgres`/`root`)
+- As rotas do módulo `elastic` requerem Elasticsearch em `localhost:9200`
